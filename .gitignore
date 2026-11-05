@@ -1,0 +1,8 @@
+node_modules/
+storybook.db
+storybook.db-*
+*.db-wal
+*.db-shm
+.env
+.env*.local
+.vercel
