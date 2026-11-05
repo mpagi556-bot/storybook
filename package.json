@@ -1,1 +1,16 @@
-{"name":"storybook-school","version":"2.0.0","private":true,"engines":{"node":">=22.5"},"scripts":{"start":"node --no-warnings server.js","test":"node --no-warnings test.js"},"optionalDependencies":{"pg":"^8.13.0"}}
+{
+  "name": "storybook-school",
+  "version": "2.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "start": "node --no-warnings server.js",
+    "test": "node --no-warnings test.js"
+  },
+  "optionalDependencies": {
+    "pg": "^8.13.0"
+  }
+}

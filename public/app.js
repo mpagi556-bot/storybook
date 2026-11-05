@@ -1,6 +1,7 @@
 "use strict";
 const app=$('#app'),bar=$('#bar');let ME=null,TAB='home',CACHE={},PEND=0;
-const api=async(m,u,b)=>{const r=await fetch('/api'+u,{method:m,headers:{'Content-Type':'application/json','X-Requested-With':'sb'},body:b?JSON.stringify(b):undefined});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Something went wrong.');return j};
+const API_BASE=String(window.STORYBOOK_API_URL||'').replace(/\/+$/,'');
+const api=async(m,u,b)=>{const r=await fetch(API_BASE+'/api'+u,{method:m,credentials:'include',headers:{'Content-Type':'application/json','X-Requested-With':'sb'},body:b?JSON.stringify(b):undefined});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'Something went wrong.');return j};
 const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('show'),2800)};
 const msg=(id,t,ok)=>{const e=$('#'+id);if(e){e.textContent=t;e.className='msg'+(ok?' ok-msg':'')}};
 const COL=[['#6a5cff','#4f8cff'],['#ff6b6b','#ff9f43'],['#12b5a6','#4f8cff'],['#b455ff','#ff6bb5'],['#2fbf71','#12b5a6']],EM=['🦁','🐘','🦒','🦜','🌈','🚀','🐢','🌳'];

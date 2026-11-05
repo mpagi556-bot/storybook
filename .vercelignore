@@ -1,0 +1,15 @@
+# Vercel serves only the static frontend (built into dist/ from public/).
+# The Node API and SQLite database run on Render, so keep them out of Vercel
+# to prevent server.js from being deployed as a Serverless Function.
+server.js
+test.js
+start.sh
+start.bat
+schema.sqlite.sql
+schema.postgres.sql
+storybook-supabase.sql
+*.db
+*.db-*
+.env
+.env*
+node_modules

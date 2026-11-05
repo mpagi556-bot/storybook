@@ -6,3 +6,4 @@ storybook.db-*
 .env
 .env*.local
 .vercel
+dist/
