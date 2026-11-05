@@ -2,6 +2,9 @@
 const http=require('http'),fs=require('fs'),path=require('path'),crypto=require('crypto');
 try{fs.readFileSync(path.join(__dirname,'.env'),'utf8').split(/\r?\n/).forEach(l=>{const m=l.match(/^\s*([A-Z_]+)\s*=\s*(.*?)\s*$/);if(m&&!l.trim().startsWith('#')&&!(m[1] in process.env))process.env[m[1]]=m[2].replace(/^["']|["']$/g,'')})}catch(e){}
 const PORT=+process.env.PORT||3000,SECURE=process.env.HTTPS==='1',ROOT=path.join(__dirname,'public');
+const ORIGINS=new Set(['https://storybook-rouge-alpha.vercel.app','https://storybook-peter55.vercel.app','https://storybook-git-main-peter55.vercel.app',...(process.env.CORS_ORIGINS||'').split(',').map(s=>s.trim().replace(/\/$/,'')).filter(Boolean)]);
+const allowedOrigin=o=>!!o&&(ORIGINS.has(o)||/^https:\/\/storybook-[a-z0-9-]+-peter55\.vercel\.app$/.test(o));
+const cookieAttrs=res=>res.cross?'SameSite=None; Secure':'SameSite=Strict'+(SECURE?'; Secure':'');
 const PG=process.env.DATABASE_URL;let q,one,run,ready;
 const SEED=['admin','admin','Administrator','5ee1c0de5ee1c0de5ee1c0de5ee1c0de:c0263ea087a424436b84c5f2331d2ecfc15fe5b5a20ad75c43166f4702478051923de59e2a6017dd5d578cd81647be388f3b19d4d663a81b1ba85aab7867e17f'];
 if(PG){const{Pool,types}=require('pg');types.setTypeParser(20,Number);const pool=new Pool({connectionString:PG,max:8,ssl:process.env.PGSSL==='1'||/supabase|neon|render|amazonaws/.test(PG)?{rejectUnauthorized:false}:undefined});
@@ -52,8 +55,8 @@ add('POST','/api/login',null,async({b,ip,res})=>{limit(ip,'login',25,6e5);const 
  if(u.status!=='approved')throw E(403,'This account is switched off. Please speak to the administrator.');
  await run('UPDATE users SET fails=0,locked_until=0 WHERE id=?',u.id);const tok=crypto.randomBytes(32).toString('hex');
  await run('INSERT INTO sessions VALUES(?,?,?,?)',sha(tok),u.id,now()+12*36e5,ip);await audit(u.id,'login','',ip);
- res.setHeader('Set-Cookie','sid='+tok+'; HttpOnly; SameSite=Strict; Path=/; Max-Age=43200'+(SECURE?'; Secure':''));return{user:pub(u)}});
-add('POST','/api/logout',null,async({req,res})=>{const t=(req.headers.cookie||'').match(/sid=([a-f0-9]+)/);if(t)await run('DELETE FROM sessions WHERE token_hash=?',sha(t[1]));res.setHeader('Set-Cookie','sid=; HttpOnly; Path=/; Max-Age=0');return{ok:1}});
+ res.setHeader('Set-Cookie','sid='+tok+'; HttpOnly; '+cookieAttrs(res)+'; Path=/; Max-Age=43200');return{user:pub(u)}});
+add('POST','/api/logout',null,async({req,res})=>{const t=(req.headers.cookie||'').match(/sid=([a-f0-9]+)/);if(t)await run('DELETE FROM sessions WHERE token_hash=?',sha(t[1]));res.setHeader('Set-Cookie','sid=; HttpOnly; '+cookieAttrs(res)+'; Path=/; Max-Age=0');return{ok:1}});
 add('POST','/api/password',ALL,async({u,b,ip})=>{if(!check(String(b.old||''),u.pass_hash))throw E(400,'Your current password is not correct.');const pw=str(b.password,u.role==='student'?4:8,100,u.role==='student'?'PIN':'Password');
  if(pw===String(b.old))throw E(400,'Choose a different password from the old one.');await run('UPDATE users SET pass_hash=?,must_change=0 WHERE id=?',hash(pw),u.id);await audit(u.id,'password_change','',ip);return{ok:1}});
 add('GET','/api/users',T,async({u})=>{const sc=scope(u);if(sc===null)return q('SELECT id,role,username,name,level,status,created_at FROM users ORDER BY CASE status WHEN \'pending\' THEN 0 ELSE 1 END,role,name');
@@ -100,8 +103,11 @@ const srv=http.createServer(async(req,res)=>{try{
  await ready;Object.entries(HEAD).forEach(([k,v])=>res.setHeader(k,v));const ip=req.socket.remoteAddress,url=new URL(req.url,'http://x'),pn=url.pathname;
  if(!pn.startsWith('/api/')){const f=path.normalize(path.join(ROOT,pn==='/'?'index.html':pn));if(!f.startsWith(ROOT)||!fs.existsSync(f)||!fs.statSync(f).isFile()){res.writeHead(404);return res.end('Not found')}
   res.writeHead(200,{'Content-Type':MIME[path.extname(f)]||'application/octet-stream','Cache-Control':'no-cache'});return fs.createReadStream(f).pipe(res)}
+ const o=req.headers.origin,sameOrigin=!o||(()=>{try{return new URL(o).host===req.headers.host}catch{return false}})();
+ if(!sameOrigin&&allowedOrigin(o)){res.cross=true;res.setHeader('Access-Control-Allow-Origin',o);res.setHeader('Access-Control-Allow-Credentials','true');res.setHeader('Vary','Origin')}
+ if(req.method==='OPTIONS'){if(!res.cross){res.writeHead(403);return res.end()}res.writeHead(204,{'Access-Control-Allow-Methods':'GET,POST,PATCH,DELETE,OPTIONS','Access-Control-Allow-Headers':'Content-Type,X-Requested-With','Access-Control-Max-Age':'600'});return res.end()}
  limit(ip,'all',600,6e4);
- if(req.method!=='GET'){if(req.headers['x-requested-with']!=='sb')throw E(403,'Blocked.');const o=req.headers.origin;if(o&&new URL(o).host!==req.headers.host)throw E(403,'Blocked.')}
+ if(req.method!=='GET'){if(req.headers['x-requested-with']!=='sb')throw E(403,'Blocked.');if(!sameOrigin&&!res.cross)throw E(403,'Blocked.')}
  const r=R.find(x=>x.m===req.method&&x.re.test(pn));if(!r)throw E(404,'Not found.');
  const m=(req.headers.cookie||'').match(/sid=([a-f0-9]{64})/),u=m?await one("SELECT u.* FROM sessions s JOIN users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.status='approved'",sha(m[1]),now()):null;
  if(r.roles&&(!u||!r.roles.includes(u.role)))throw E(u?403:401,u?'You do not have access to this.':'Please sign in.');
