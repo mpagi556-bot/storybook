@@ -1,5 +1,6 @@
 # Storybook School
 
+<<<<<<< HEAD
 A school reading and assessment platform for primary learners (P.1–P.6). This upgrade extends the supplied Node.js + browser-JavaScript application; it does **not** replace its framework or rewrite the original assessment engine.
 
 ## What is included in this upgrade
@@ -133,3 +134,30 @@ Only import material that is public domain, openly licensed, created by the scho
 - All timestamps stored by the application are Unix milliseconds (`BIGINT` in PostgreSQL / `INTEGER` in SQLite).
 - The browser uses pinned CDN builds of Mammoth, PDF.js, Tesseract.js and Papa Parse for document/CSV parsing. These are convenience dependencies for file import; the backend remains independent of them.
 - This ZIP includes the source and the migration files. A successful local SQLite test run does not prove that a particular live PostgreSQL database, Render service or Supabase bucket is configured correctly. See the verification limitations in `docs/UPGRADE_SCOPE.md`.
+=======
+## How to start (important)
+Never double-click index.html. Double-click **start.bat** (Windows) or run **./start.sh**, then open **http://localhost:3000**.
+For Supabase: copy `.env.example` to `.env`, put your connection string in it, then run start.bat.
+
+## First sign-in
+Username `admin`, password `Admin@12345`. You must choose a new password straight away.
+
+## Option A: PostgreSQL / Supabase (what you are using)
+1. In Supabase, open SQL Editor and run **schema.postgres.sql** (NOT the sqlite file). It creates the tables, locks them from the public API and adds the admin.
+2. Copy your database connection string (Project Settings > Database > Connection string; the "Session pooler" one is best).
+3. In this folder:  `npm install`  then  `DATABASE_URL="postgresql://..." node server.js`
+   (Windows PowerShell: `$env:DATABASE_URL="postgresql://..."; node server.js`)
+4. Open http://localhost:3000
+
+## Option B: no database setup (SQLite, needs Node 22.5+)
+`node server.js`  (creates storybook.db and the admin automatically; uses schema.sqlite.sql)
+
+## How access works
+- Anyone can press "Create account" and choose Pupil or Teacher plus their class.
+- They cannot sign in until the admin approves them under **Approvals**, where the admin can change the class first, or reject.
+- Pupils see only published tests for their class. Teachers see only pupils and results for the classes the admin gave them.
+- Only the admin adds accounts directly, switches accounts off, or adds teachers.
+
+Env vars: PORT, DATABASE_URL, PGSSL=1, HTTPS=1 (Secure cookies + HSTS, use behind HTTPS), DB (SQLite file).
+Self-test (SQLite): `node test.js`
+>>>>>>> 7fb8428f4ea9b1f295092e1b30452614e1e0f2f4

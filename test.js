@@ -16,7 +16,11 @@ const jar={};const call=async(m,u,b,c='t')=>{const r=await fetch('http://localho
  assert.equal((await call('GET','/users')).s,403,'blocked until password changed');
  assert.equal((await call('POST','/password',{old:'Admin@12345',password:'Admin@12345'})).s,400);
  assert.equal((await call('POST','/password',{old:'Admin@12345',password:'StrongPass1'})).s,200);console.log('admin: default login forces a password change');
+<<<<<<< HEAD
  const t=await call('POST','/tests',{title:test.title,level:test.level,story:test.story,Q:test.Q,published:true,assessment_type:'formative'});assert.equal(t.s,200);
+=======
+ const t=await call('POST','/tests',{title:test.title,level:test.level,story:test.story,Q:test.Q,published:true});assert.equal(t.s,200);
+>>>>>>> 7fb8428f4ea9b1f295092e1b30452614e1e0f2f4
  // sign-up + approval
  assert.equal((await call('POST','/signup',{name:'Pupil One',username:'pupil1',password:'1234',role:'student',level:'P.6'})).s,200);
  assert.equal((await call('POST','/signup',{name:'Pupil Two',username:'pupil2',password:'1234',role:'student',level:'P.2'})).s,200);
@@ -39,6 +43,7 @@ const jar={};const call=async(m,u,b,c='t')=>{const r=await fetch('http://localho
  assert.equal((await call('POST','/users',{name:'x',username:'xyz',password:'1234'},'tt')).s,403,'teacher cannot add accounts');
  assert.equal((await call('GET','/users',null,'s')).s,403);
  console.log('classes: pupils see only their class; teacher sees only own classes');
+<<<<<<< HEAD
  const st=await call('GET','/tests/'+t.j.id,null,'s');assert.equal(st.j.assessment_type,'formative','assessment type is stored and returned');const raw=JSON.stringify(st.j);assert(!/"ans"/.test(raw)&&!/"n":\d/.test(raw),'answers leaked');console.log('security: pupil copy has no answers');
  assert.equal((await call('POST','/tests',{title:'x',Q:[]},'s')).s,403);
  await call('POST','/tests/'+t.j.id+'/start',{},'s');
@@ -74,6 +79,16 @@ const jar={};const call=async(m,u,b,c='t')=>{const r=await fetch('http://localho
  assert.equal((await call('POST','/tests/'+t.j.id+'/retake',{student_id:id('pupil1'),reason:'Additional practice'},'tt')).s,200,'teacher can allow retake');assert.equal((await call('GET','/parent/results',null,'par')).j.length,0,'old attempt is archived before new attempt');const backup=await call('GET','/backup',null,'t');assert.equal(backup.s,200);assert.equal(backup.j.tables.attempt_history.length,1,'previous attempt retained in backup');assert(!('pass_hash'in backup.j.tables.users[0]),'backup excludes password hashes');
  assert.equal((await call('POST','/tests/'+t.j.id+'/start',{},'s')).s,200,'pupil can start the approved retake');assert.equal((await call('POST','/ai/story-details',{title:'AI story',level:'P.6'},'tt')).s,503,'AI endpoint clearly reports missing server key');assert.equal((await call('POST','/uploads/sign',{name:'x.pdf',mime_type:'application/pdf',size_bytes:100},'tt')).s,503,'storage endpoint clearly reports missing configuration');
  console.log('library: published stories, read tracking, parent-child scope, question bank, comments, announcements, resume and archive ok');
+=======
+ const st=await call('GET','/tests/'+t.j.id,null,'s');const raw=JSON.stringify(st.j);assert(!/"ans"/.test(raw)&&!/"n":\d/.test(raw),'answers leaked');console.log('security: pupil copy has no answers');
+ assert.equal((await call('POST','/tests',{title:'x',Q:[]},'s')).s,403);
+ await call('POST','/tests/'+t.j.id+'/start',{},'s');
+ const A=test.Q.map(q=>q.type==='mc'?q.ans:q.type==='cloze'?q.ans:q.type==='order'?q.items.map(i=>String(i.n)):'Akello thanked Opio because he helped her find the goat. Mzee Wasswa was kind to them in the village near the river and they all went home happy. Akello was proud of her goat.');
+ const sub=await call('POST','/tests/'+t.j.id+'/submit',{answers:A},'s');assert.equal(sub.s,200);
+ assert.equal((await call('POST','/tests/'+t.j.id+'/submit',{answers:[]},'s')).s,409);
+ const at=await call('GET','/attempts/'+sub.j.id,null,'s');assert.equal(at.j.got,at.j.total);console.log('marking: perfect answers scored',at.j.got+'/'+at.j.total);
+ assert.equal((await call('GET','/attempts/'+sub.j.id,null,'p2')).s,404);assert.equal((await call('GET','/results',null,'tt')).j.length,1);
+>>>>>>> 7fb8428f4ea9b1f295092e1b30452614e1e0f2f4
  assert.equal((await call('PATCH','/users/'+id('pupil1'),{status:'disabled'})).s,200);assert.equal((await call('GET','/tests',null,'s')).s,401,'disabled user session ends');
  for(let i=0;i<5;i++)await call('POST','/login',{username:'pupil2',password:'x'},'z');assert.equal((await call('POST','/login',{username:'pupil2',password:'1234'},'z')).s,423);console.log('lockout: ok');
  const h=await fetch('http://localhost:3999/');assert(h.headers.get('content-security-policy')&&(await h.text()).includes('Storybook'));assert.equal((await fetch('http://localhost:3999/../server.js')).status,404);

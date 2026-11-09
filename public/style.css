@@ -56,8 +56,11 @@ input.bl{display:inline-block;width:auto;padding:2px 8px;border-radius:8px;margi
 @media print{body{background:#fff}.sky,#fx,header,.noprint,.btns{display:none!important}.card{box-shadow:none;border:0;padding:0}main{max-width:none}}
 .hide{display:none!important}
 .cover h3{color:#fff;border:0;padding:0;margin:.3em 0}
+<<<<<<< HEAD
 
 /* Story Library reading and accessible speech highlighting */
 .story-reader{font-size:1.2rem;line-height:2.05;white-space:pre-wrap;background:#fffdf7;border:1px solid #f0e7d4;border-radius:18px;padding:22px;margin:18px 0;color:#30264f}.read-word{border-radius:4px;transition:background .12s}.read-word.speaking{background:#ffe36e;color:#20183f;box-shadow:0 0 0 2px #ffe36e}.story-reader:focus{outline:3px solid #6a5cff}
 body.large-text main{font-size:1.18rem}body.easy-read,body.easy-read input,body.easy-read textarea,body.easy-read button{font-family:Arial,Helvetica,sans-serif;letter-spacing:.015em}body.high-contrast{filter:contrast(1.3)}
 .story-cover{display:block;max-width:min(100%,420px);max-height:320px;object-fit:contain;margin:14px auto;border-radius:16px}.boot{padding:22px;text-align:center;color:#5b4d8c}
+=======
+>>>>>>> 7fb8428f4ea9b1f295092e1b30452614e1e0f2f4
